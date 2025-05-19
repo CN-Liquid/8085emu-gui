@@ -7,6 +7,31 @@
 typedef uint8_t byte;
 typedef uint16_t word;
 
+struct context {
+  // word size registers are divided into upper and lower bytes
+
+  // main registers
+  byte A, B, C, D, E, H, L;
+
+  // stack register
+  byte SPU, SPL;
+
+  // program counter register
+  byte PCU, PCL;
+
+  // status register
+  byte S : 1;  // sign
+  byte Z : 1;  // zero
+  byte AC : 1; // auxiliary carry
+  byte P : 1;  // parity
+  byte CY : 1; // carry
+
+  byte I;
+
+  // the 8-bit data bus
+  byte DB;
+};
+
 class emu8085 {
 
   // word size registers are divided into upper and lower bytes
@@ -54,6 +79,7 @@ class emu8085 {
   void initializeInstructionTable();
 
 public:
+  context cachedContext;
   // Transfer commands only to be used to define 8085 instructions
   void load_reg_pair(byte &regPair, word data);
   void load_reg(byte &reg, byte data);
@@ -63,6 +89,8 @@ public:
 
   void execute();
   void print(word memLoc);
+
+  void refresh_context();
 
   emu8085();
 
