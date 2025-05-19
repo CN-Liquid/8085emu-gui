@@ -52,6 +52,8 @@ emu8085Gui::emu8085Gui() {
   io->ConfigFlags |=
       ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
 
+  io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
   // ImGui::StyleColorsLight();

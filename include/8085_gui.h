@@ -1,3 +1,4 @@
+#include "Terminal.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -12,6 +13,7 @@ protected:
   GLFWwindow *window;
   ImVec4 clear_color;
   ImGuiIO *io;
+  terminal term;
 
 public:
   emu8085Gui();
@@ -21,4 +23,6 @@ public:
   void run();
 
   virtual void update() = 0;
+
+  // virtual void startup() = 0;
 };
