@@ -2,6 +2,8 @@
 
 emu8085Gui::emu8085Gui() {
 
+  term.perform("message");
+
   if (!glfwInit())
     exit(1);
 
