@@ -9,6 +9,8 @@ struct command {
 class terminal {
   emu8085 CPU;
 
+  bool enableMessages = true;
+
   std::unordered_map<std::string, command> commandRepo;
 
   std::vector<std::string> token;
@@ -26,6 +28,7 @@ class terminal {
   command cExec;
   command cCounter;
   command cContext;
+  command cMessage;
 
   void *fEnd();
   void *fLoad();
@@ -34,6 +37,7 @@ class terminal {
   void *fExec();
   void *fCounter();
   void *fContext();
+  void *fMessage();
 
   void string_parser();
 

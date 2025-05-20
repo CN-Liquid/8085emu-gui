@@ -39,19 +39,19 @@ void cEmu8085Gui::update() {
       c = (context *)(term.perform(input));
       execute = !execute;
     }
-    ImGui::Text("A : %d", static_cast<int>(c->A));
-    ImGui::Text("B : %d\t C : %d", static_cast<int>(c->B),
+    ImGui::Text("A : %02X", static_cast<int>(c->A));
+    ImGui::Text("B : %02X\t C : %02X", static_cast<int>(c->B),
                 static_cast<int>(c->C));
 
-    ImGui::Text("D : %d\t E : %d", static_cast<int>(c->D),
+    ImGui::Text("D : %02X\t E : %02X", static_cast<int>(c->D),
                 static_cast<int>(c->E));
 
-    ImGui::Text("H : %d\t L : %d", static_cast<int>(c->H),
+    ImGui::Text("H : %02X\t L : %02X", static_cast<int>(c->H),
                 static_cast<int>(c->L));
-    ImGui::Text("SP : %d\t PC : %d",
+    ImGui::Text("SP : %04X\t PC : %04X",
                 static_cast<int>(word((c->SPU << 8) + c->SPL)),
                 static_cast<int>(word((c->PCU << 8) + c->PCL)));
-    ImGui::Text("I : %d", static_cast<int>(c->I));
+    ImGui::Text("I : %02X", static_cast<int>(c->I));
 
     ImGui::Text("S : %d  Z : %d  AC : %d  P : %d  CY : %d",
                 static_cast<int>(c->S), static_cast<int>(c->Z),
