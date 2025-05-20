@@ -1,5 +1,21 @@
 #include <8085_gui.h>
 
+std::string formatHexFast(int value, char delimiter = ' ') {
+  const char *hexDigits = "0123456789ABCDEF";
+  char buffer[6]; // 4 hex digits + 1 delimiter + null terminator
+
+  // Mask to 16 bits to be safe
+  value &= 0xFFFF;
+
+  buffer[0] = hexDigits[(value >> 12) & 0xF];
+  buffer[1] = hexDigits[(value >> 8) & 0xF];
+  buffer[2] = delimiter;
+  buffer[3] = hexDigits[(value >> 4) & 0xF];
+  buffer[4] = hexDigits[value & 0xF];
+  buffer[5] = '\0';
+
+  return std::string(buffer);
+}
 class cEmu8085Gui : public emu8085Gui {
   char inputBuffer[128] = "";
   bool execute = false;
@@ -57,4 +73,29 @@ void cEmu8085Gui::update() {
     }
   }
   ImGui::End();
+  if (ImGui::BeginTable("LargeTable", 2,
+                        ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
+
+    ImGui::TableSetupColumn("Address");
+    ImGui::TableSetupColumn("Value");
+    ImGui::TableHeadersRow();
+
+    ImGuiListClipper clipper;
+    clipper.Begin(65536); // Total number of rows
+
+    while (clipper.Step()) {
+      for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text("%04X", row);
+        ImGui::TableSetColumnIndex(1);
+        std::string result = std::string("print") + " " + formatHexFast(row);
+
+        context *a = (context *)(term.perform(result));
+        ImGui::Text(" %02X", static_cast<int>(a->DB));
+      }
+    }
+
+    ImGui::EndTable();
+  }
 }
