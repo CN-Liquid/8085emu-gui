@@ -7,6 +7,7 @@ struct command {
 };
 
 class terminal {
+
   emu8085 CPU;
 
   bool enableMessages = true;
@@ -21,6 +22,8 @@ class terminal {
 
   void init();
 
+  std::unordered_map<std::string, byte *> regList;
+
   command cEnd;
   command cLoad;
   command cPrint;
@@ -29,6 +32,12 @@ class terminal {
   command cCounter;
   command cContext;
   command cMessage;
+  command cLoadReg;
+  command cLoadRegPair;
+  command cPrintReg;
+  command cPrintRegPair;
+  command cResetReg;
+  command cResetMem;
 
   void *fEnd();
   void *fLoad();
@@ -38,6 +47,12 @@ class terminal {
   void *fCounter();
   void *fContext();
   void *fMessage();
+  void *fLoadReg();
+  void *fLoadRegPair();
+  void *fPrintReg();
+  void *fPrintRegPair();
+  void *fResetReg();
+  void *fResetMem();
 
   void string_parser();
 

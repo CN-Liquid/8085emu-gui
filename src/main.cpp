@@ -19,9 +19,10 @@ std::string formatHexFast(int value, char delimiter = ' ') {
 class cEmu8085Gui : public emu8085Gui {
   char inputBuffer[128] = "";
   bool execute = false;
-  context *c = (context *)(term.perform("context"));
+
   char hexBuffer[3];
-  int value;
+  char whexBuffer[5];
+  byte *value;
 
 public:
   void update();
@@ -36,149 +37,156 @@ int main() {
 
 void cEmu8085Gui::update() {
   if (ImGui::Begin("Registers")) {
-    std::string input = "context";
-    if (execute) {
-      c = (context *)(term.perform(input));
-      execute = !execute;
-    }
+
     ImGui::PushItemWidth(30);
-    value = static_cast<int>(c->A);
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", value);
+    value = (byte *)term.perform("printr A");
+    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", *value);
     ImGui::Text("A :");
     ImGui::SameLine();
     if (ImGui::InputText("##A", hexBuffer, sizeof(hexBuffer),
                          ImGuiInputTextFlags_CharsHexadecimal))
       ;
     {
-      std::string cmd =
-          std::string("load 00 00 3e ") + hexBuffer + std::string(" 76");
-      term.perform(cmd);
-      term.perform("exec");
-      term.perform("load 00 00 00 00");
+      term.perform(std::string("loadr A ") + hexBuffer);
     }
 
-    value = static_cast<int>(c->B);
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", value);
+    value = (byte *)term.perform("printr B");
+    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", *value);
 
     ImGui::Text("B :");
     ImGui::SameLine();
-    ImGui::InputText("##B", hexBuffer, sizeof(hexBuffer),
-                     ImGuiInputTextFlags_CharsHexadecimal);
+    if (ImGui::InputText("##B", hexBuffer, sizeof(hexBuffer),
+                         ImGuiInputTextFlags_CharsHexadecimal)) {
+      term.perform(std::string("loadr B ") + hexBuffer);
+    }
     ImGui::SameLine(0, 50);
-    value = static_cast<int>(c->C);
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", value);
+    value = (byte *)term.perform("printr C");
+    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", *value);
 
     ImGui::Text("C :");
     ImGui::SameLine();
-    ImGui::InputText("##C", hexBuffer, sizeof(hexBuffer),
-                     ImGuiInputTextFlags_CharsHexadecimal);
+    if (ImGui::InputText("##C", hexBuffer, sizeof(hexBuffer),
+                         ImGuiInputTextFlags_CharsHexadecimal)) {
+      term.perform(std::string("loadr C ") + hexBuffer);
+    }
 
-    value = static_cast<int>(c->D);
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", value);
+    value = (byte *)term.perform("printr D");
+    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", *value);
 
     ImGui::Text("D :");
     ImGui::SameLine();
-    ImGui::InputText("##D", hexBuffer, sizeof(hexBuffer),
-                     ImGuiInputTextFlags_CharsHexadecimal);
+    if (ImGui::InputText("##D", hexBuffer, sizeof(hexBuffer),
+                         ImGuiInputTextFlags_CharsHexadecimal)) {
+      term.perform(std::string("loadr D ") + hexBuffer);
+    }
 
     ImGui::SameLine(0, 50);
 
-    value = static_cast<int>(c->E);
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", value);
+    value = (byte *)term.perform("printr E");
+    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", *value);
 
     ImGui::Text("E :");
     ImGui::SameLine();
-    ImGui::InputText("##E", hexBuffer, sizeof(hexBuffer),
-                     ImGuiInputTextFlags_CharsHexadecimal);
+    if (ImGui::InputText("##E", hexBuffer, sizeof(hexBuffer),
+                         ImGuiInputTextFlags_CharsHexadecimal)) {
+      term.perform(std::string("loadr E ") + hexBuffer);
+    }
 
-    value = static_cast<int>(c->H);
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", value);
+    value = (byte *)term.perform("printr H");
+    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", *value);
 
     ImGui::Text("H :");
     ImGui::SameLine();
-    ImGui::InputText("##H", hexBuffer, sizeof(hexBuffer),
-                     ImGuiInputTextFlags_CharsHexadecimal);
+    if (ImGui::InputText("##H", hexBuffer, sizeof(hexBuffer),
+                         ImGuiInputTextFlags_CharsHexadecimal)) {
+      term.perform(std::string("loadr H ") + hexBuffer);
+    }
 
     ImGui::SameLine(0, 50);
 
-    value = static_cast<int>(c->L);
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", value);
+    value = (byte *)term.perform("printr L");
+    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", *value);
 
     ImGui::Text("L :");
     ImGui::SameLine();
-    ImGui::InputText("##L", hexBuffer, sizeof(hexBuffer),
-                     ImGuiInputTextFlags_CharsHexadecimal);
-
-    value = static_cast<int>(word((c->SPU << 8) + c->SPL));
-    snprintf(hexBuffer, sizeof(hexBuffer), "%04X", value);
+    if (ImGui::InputText("##L", hexBuffer, sizeof(hexBuffer),
+                         ImGuiInputTextFlags_CharsHexadecimal)) {
+      term.perform(std::string("loadr L ") + hexBuffer);
+    }
+    ImGui::PushItemWidth(40);
+    value = (byte *)(term.perform("printr SP"));
+    snprintf(whexBuffer, sizeof(whexBuffer), "%04X",
+             word(((*value) << 8) + *(value + sizeof(byte))));
     ImGui::Text("SP :");
     ImGui::SameLine();
-    ImGui::InputText("##SP", hexBuffer, sizeof(hexBuffer),
+    ImGui::InputText("##SP", whexBuffer, sizeof(whexBuffer),
                      ImGuiInputTextFlags_CharsHexadecimal);
 
     ImGui::SameLine(0, 50);
 
-    value = static_cast<int>(word((c->PCU << 8) + c->PCL));
-    snprintf(hexBuffer, sizeof(hexBuffer), "%04X", value);
+    value = (byte *)(term.perform("printr PC"));
+    snprintf(whexBuffer, sizeof(whexBuffer), "%04X",
+             word(((*value) << 8) + *(value + sizeof(byte))));
 
     ImGui::Text("PC :");
     ImGui::SameLine();
-    ImGui::InputText("##PC", hexBuffer, sizeof(hexBuffer),
+    ImGui::InputText("##PC", whexBuffer, sizeof(whexBuffer),
                      ImGuiInputTextFlags_CharsHexadecimal);
 
     ImGui::SameLine(0, 50);
 
-    value = static_cast<int>(c->I);
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", value);
+    value = (byte *)term.perform("printr I");
+    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", *value);
 
     ImGui::Text("I :");
     ImGui::SameLine();
     ImGui::InputText("##I", hexBuffer, sizeof(hexBuffer),
-                     ImGuiInputTextFlags_CharsHexadecimal);
+                     ImGuiInputTextFlags_CharsHexadecimal); /*
 
-    value = static_cast<int>(c->S);
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", value);
+     value = static_cast<int>(c->S);
+     snprintf(hexBuffer, sizeof(hexBuffer), "%02X", value);
 
-    ImGui::Text("S :");
-    ImGui::SameLine();
-    ImGui::InputText("##S", hexBuffer, sizeof(hexBuffer),
-                     ImGuiInputTextFlags_CharsHexadecimal);
+     ImGui::Text("S :");
+     ImGui::SameLine();
+     ImGui::InputText("##S", hexBuffer, sizeof(hexBuffer),
+                      ImGuiInputTextFlags_CharsHexadecimal);
 
-    ImGui::SameLine();
+     ImGui::SameLine();
 
-    value = static_cast<int>(c->S);
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", value);
-    ImGui::Text("Z :");
-    ImGui::SameLine();
-    ImGui::InputText("##Z", hexBuffer, sizeof(hexBuffer),
-                     ImGuiInputTextFlags_CharsHexadecimal);
+     value = static_cast<int>(c->S);
+     snprintf(hexBuffer, sizeof(hexBuffer), "%02X", value);
+     ImGui::Text("Z :");
+     ImGui::SameLine();
+     ImGui::InputText("##Z", hexBuffer, sizeof(hexBuffer),
+                      ImGuiInputTextFlags_CharsHexadecimal);
 
-    ImGui::SameLine();
+     ImGui::SameLine();
 
-    value = static_cast<int>(c->AC);
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", value);
-    ImGui::Text("AC :");
-    ImGui::SameLine();
-    ImGui::InputText("##AC", hexBuffer, sizeof(hexBuffer),
-                     ImGuiInputTextFlags_CharsHexadecimal);
+     value = static_cast<int>(c->AC);
+     snprintf(hexBuffer, sizeof(hexBuffer), "%02X", value);
+     ImGui::Text("AC :");
+     ImGui::SameLine();
+     ImGui::InputText("##AC", hexBuffer, sizeof(hexBuffer),
+                      ImGuiInputTextFlags_CharsHexadecimal);
 
-    ImGui::SameLine();
+     ImGui::SameLine();
 
-    value = static_cast<int>(c->S);
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", value);
-    ImGui::Text("CY :");
-    ImGui::SameLine();
-    ImGui::InputText("##CY", hexBuffer, sizeof(hexBuffer),
-                     ImGuiInputTextFlags_CharsHexadecimal);
+     value = static_cast<int>(c->S);
+     snprintf(hexBuffer, sizeof(hexBuffer), "%02X", value);
+     ImGui::Text("CY :");
+     ImGui::SameLine();
+     ImGui::InputText("##CY", hexBuffer, sizeof(hexBuffer),
+                      ImGuiInputTextFlags_CharsHexadecimal);
 
-    ImGui::SameLine();
+     ImGui::SameLine();
 
-    value = static_cast<int>(c->P);
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", value);
-    ImGui::Text("P :");
-    ImGui::SameLine();
-    ImGui::InputText("##P", hexBuffer, sizeof(hexBuffer),
-                     ImGuiInputTextFlags_CharsHexadecimal);
+     value = static_cast<int>(c->P);
+     snprintf(hexBuffer, sizeof(hexBuffer), "%02X", value);
+     ImGui::Text("P :");
+     ImGui::SameLine();
+     ImGui::InputText("##P", hexBuffer, sizeof(hexBuffer),
+                      ImGuiInputTextFlags_CharsHexadecimal);
+   */
   }
 
   ImGui::End();
@@ -212,11 +220,10 @@ void cEmu8085Gui::update() {
         ImGui::TableSetColumnIndex(0);
         ImGui::Text("%04X", row);
         ImGui::TableSetColumnIndex(1);
-        std::string result = std::string("print") + " " + formatHexFast(row);
+        std::string result = std::string("print ") + formatHexFast(row);
 
-        context *a = (context *)(term.perform(result));
-        value = static_cast<int>(a->DB);
-        snprintf(hexBuffer, sizeof(hexBuffer), "%02X", value);
+        value = (byte *)term.perform(result);
+        snprintf(hexBuffer, sizeof(hexBuffer), "%02X", *value);
         if (ImGui::InputText(("##" + std::to_string(row)).c_str(), hexBuffer,
                              sizeof(hexBuffer),
                              ImGuiInputTextFlags_CharsHexadecimal |
@@ -224,7 +231,6 @@ void cEmu8085Gui::update() {
                                  ImGuiInputTextFlags_AutoSelectAll)) {
           std::string cmd = "load " + formatHexFast(row) + " " + hexBuffer;
           term.perform(cmd);
-          std::cout << cmd;
         }
       }
     }
