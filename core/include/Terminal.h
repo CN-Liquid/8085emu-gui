@@ -22,6 +22,8 @@ class terminal {
 
   void init();
 
+  byte flags;
+
   std::unordered_map<std::string, byte *> regList;
 
   command cEnd;
@@ -38,6 +40,7 @@ class terminal {
   command cPrintRegPair;
   command cResetReg;
   command cResetMem;
+  command cPrintF;
 
   void *fEnd();
   void *fLoad();
@@ -53,6 +56,7 @@ class terminal {
   void *fPrintRegPair();
   void *fResetReg();
   void *fResetMem();
+  void *fPrintF();
 
   void string_parser();
 
