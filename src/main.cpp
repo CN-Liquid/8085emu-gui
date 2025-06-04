@@ -16,6 +16,7 @@ std::string formatHexFast(int value, char delimiter = ' ') {
 
   return std::string(buffer);
 }
+
 class cEmu8085Gui : public emu8085Gui {
   char inputBuffer[128] = "";
   bool execute = false;
@@ -27,7 +28,42 @@ class cEmu8085Gui : public emu8085Gui {
 
 public:
   void update();
+
+  friend void draw_reg(cEmu8085Gui &obj, std::string reg);
+  friend void draw_reg_pair(cEmu8085Gui &obj, std::string reg);
+  friend void draw_flag(cEmu8085Gui &obj, bool flag);
 };
+void draw_reg(cEmu8085Gui &obj, std::string reg) {
+  obj.value = (byte *)obj.term.perform("printr " + reg);
+  snprintf(obj.hexBuffer, sizeof(obj.hexBuffer), "%02X", *obj.value);
+  ImGui::Text("A :");
+  ImGui::SameLine();
+  if (ImGui::InputText("##A", obj.hexBuffer, sizeof(obj.hexBuffer),
+                       ImGuiInputTextFlags_CharsHexadecimal))
+    ;
+  {
+    obj.term.perform(std::string("loadr A ") + obj.hexBuffer);
+  }
+}
+
+void draw_reg_pair(cEmu8085Gui &obj, std::string reg) {
+  obj.value = (byte *)(obj.term.perform("printr SP"));
+  snprintf(obj.whexBuffer, sizeof(obj.whexBuffer), "%04X",
+           word(((*obj.value) << 8) + *(obj.value + sizeof(byte))));
+  ImGui::Text("SP :");
+  ImGui::SameLine();
+  ImGui::InputText("##SP", obj.whexBuffer, sizeof(obj.whexBuffer),
+                   ImGuiInputTextFlags_CharsHexadecimal);
+}
+
+void draw_flag(cEmu8085Gui &obj, bool flag) {
+  snprintf(obj.hexBuffer, sizeof(obj.hexBuffer), "%01X", flag);
+
+  ImGui::Text("S :");
+  ImGui::SameLine();
+  ImGui::InputText("##S", obj.hexBuffer, sizeof(obj.hexBuffer),
+                   ImGuiInputTextFlags_CharsHexadecimal);
+}
 int main() {
   cEmu8085Gui CPU;
 
@@ -40,157 +76,65 @@ void cEmu8085Gui::update() {
   if (ImGui::Begin("Registers")) {
 
     ImGui::PushItemWidth(25);
-    value = (byte *)term.perform("printr A");
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", *value);
-    ImGui::Text("A :");
-    ImGui::SameLine();
-    if (ImGui::InputText("##A", hexBuffer, sizeof(hexBuffer),
-                         ImGuiInputTextFlags_CharsHexadecimal))
-      ;
-    {
-      term.perform(std::string("loadr A ") + hexBuffer);
-    }
 
-    value = (byte *)term.perform("printr B");
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", *value);
+    draw_reg(*this, "A");
 
-    ImGui::Text("B :");
-    ImGui::SameLine();
-    if (ImGui::InputText("##B", hexBuffer, sizeof(hexBuffer),
-                         ImGuiInputTextFlags_CharsHexadecimal)) {
-      term.perform(std::string("loadr B ") + hexBuffer);
-    }
-    ImGui::SameLine(0, 50);
-    value = (byte *)term.perform("printr C");
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", *value);
-
-    ImGui::Text("C :");
-    ImGui::SameLine();
-    if (ImGui::InputText("##C", hexBuffer, sizeof(hexBuffer),
-                         ImGuiInputTextFlags_CharsHexadecimal)) {
-      term.perform(std::string("loadr C ") + hexBuffer);
-    }
-
-    value = (byte *)term.perform("printr D");
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", *value);
-
-    ImGui::Text("D :");
-    ImGui::SameLine();
-    if (ImGui::InputText("##D", hexBuffer, sizeof(hexBuffer),
-                         ImGuiInputTextFlags_CharsHexadecimal)) {
-      term.perform(std::string("loadr D ") + hexBuffer);
-    }
+    draw_reg(*this, "B");
 
     ImGui::SameLine(0, 50);
 
-    value = (byte *)term.perform("printr E");
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", *value);
+    draw_reg(*this, "C");
 
-    ImGui::Text("E :");
-    ImGui::SameLine();
-    if (ImGui::InputText("##E", hexBuffer, sizeof(hexBuffer),
-                         ImGuiInputTextFlags_CharsHexadecimal)) {
-      term.perform(std::string("loadr E ") + hexBuffer);
-    }
-
-    value = (byte *)term.perform("printr H");
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", *value);
-
-    ImGui::Text("H :");
-    ImGui::SameLine();
-    if (ImGui::InputText("##H", hexBuffer, sizeof(hexBuffer),
-                         ImGuiInputTextFlags_CharsHexadecimal)) {
-      term.perform(std::string("loadr H ") + hexBuffer);
-    }
+    draw_reg(*this, "D");
 
     ImGui::SameLine(0, 50);
 
-    value = (byte *)term.perform("printr L");
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", *value);
+    draw_reg(*this, "E");
 
-    ImGui::Text("L :");
-    ImGui::SameLine();
-    if (ImGui::InputText("##L", hexBuffer, sizeof(hexBuffer),
-                         ImGuiInputTextFlags_CharsHexadecimal)) {
-      term.perform(std::string("loadr L ") + hexBuffer);
-    }
+    draw_reg(*this, "H");
+
+    ImGui::SameLine(0, 50);
+
+    draw_reg(*this, "L");
+
     ImGui::PushItemWidth(35);
-    value = (byte *)(term.perform("printr SP"));
-    snprintf(whexBuffer, sizeof(whexBuffer), "%04X",
-             word(((*value) << 8) + *(value + sizeof(byte))));
-    ImGui::Text("SP :");
-    ImGui::SameLine();
-    ImGui::InputText("##SP", whexBuffer, sizeof(whexBuffer),
-                     ImGuiInputTextFlags_CharsHexadecimal);
+
+    draw_reg_pair(*this, "SP");
 
     ImGui::SameLine(0, 50);
 
-    value = (byte *)(term.perform("printr PC"));
-    snprintf(whexBuffer, sizeof(whexBuffer), "%04X",
-             word(((*value) << 8) + *(value + sizeof(byte))));
-
-    ImGui::Text("PC :");
-    ImGui::SameLine();
-    ImGui::InputText("##PC", whexBuffer, sizeof(whexBuffer),
-                     ImGuiInputTextFlags_CharsHexadecimal);
+    draw_reg_pair(*this, "PC");
 
     ImGui::SameLine(0, 50);
 
-    ImGui::PushItemWidth(25);
-    value = (byte *)term.perform("printr I");
-    snprintf(hexBuffer, sizeof(hexBuffer), "%02X", *value);
-
-    ImGui::Text("I :");
-    ImGui::SameLine();
-    ImGui::InputText("##I", hexBuffer, sizeof(hexBuffer),
-                     ImGuiInputTextFlags_CharsHexadecimal);
+    draw_reg_pair(*this, "I");
 
     ImGui::PushItemWidth(15);
     flags = (byte *)term.perform("printf");
 
     bool S = ((*flags) >> 7);
-    snprintf(hexBuffer, sizeof(hexBuffer), "%01X", S);
-
-    ImGui::Text("S :");
-    ImGui::SameLine();
-    ImGui::InputText("##S", hexBuffer, sizeof(hexBuffer),
-                     ImGuiInputTextFlags_CharsHexadecimal);
-
-    ImGui::SameLine();
-
     bool Z = (*flags) >> 6;
-    snprintf(hexBuffer, sizeof(hexBuffer), "%01X", Z);
-    ImGui::Text("Z :");
-    ImGui::SameLine();
-    ImGui::InputText("##Z", hexBuffer, sizeof(hexBuffer),
-                     ImGuiInputTextFlags_CharsHexadecimal);
-
-    ImGui::SameLine();
-
     bool AC = (*flags) >> 5;
-    snprintf(hexBuffer, sizeof(hexBuffer), "%01X", AC);
-    ImGui::Text("AC :");
-    ImGui::SameLine();
-    ImGui::InputText("##AC", hexBuffer, sizeof(hexBuffer),
-                     ImGuiInputTextFlags_CharsHexadecimal);
-
-    ImGui::SameLine();
-
     bool CY = (*flags) >> 4;
-    snprintf(hexBuffer, sizeof(hexBuffer), "%01X", CY);
-    ImGui::Text("CY :");
-    ImGui::SameLine();
-    ImGui::InputText("##CY", hexBuffer, sizeof(hexBuffer),
-                     ImGuiInputTextFlags_CharsHexadecimal);
-
-    ImGui::SameLine();
-
     bool P = (*flags) >> 3;
-    snprintf(hexBuffer, sizeof(hexBuffer), "%01X", P);
-    ImGui::Text("P :");
+
+    draw_flag(*this, S);
+
     ImGui::SameLine();
-    ImGui::InputText("##P", hexBuffer, sizeof(hexBuffer),
-                     ImGuiInputTextFlags_CharsHexadecimal);
+
+    draw_flag(*this, Z);
+
+    ImGui::SameLine();
+
+    draw_flag(*this, AC);
+
+    ImGui::SameLine();
+
+    draw_flag(*this, CY);
+
+    ImGui::SameLine();
+
+    draw_flag(*this, P);
   }
 
   ImGui::End();
