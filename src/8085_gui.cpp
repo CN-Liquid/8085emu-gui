@@ -1,11 +1,19 @@
 #include <8085_gui.h>
 
+void glfwErrorCallback(int error, const char *description) {
+  std::cout << "[GLFW ERROR " << error << "]: " << description << std::endl;
+}
+
 emu8085Gui::emu8085Gui() {
 
   term.perform("mes");
 
-  if (!glfwInit())
+  glfwSetErrorCallback(glfwErrorCallback);
+
+  if (!glfwInit()) {
+    std::cout << "Failed to initialize glfw" << '\n';
     exit(1);
+  }
 
   // Decide GL+GLSL versions
 #if defined(IMGUI_IMPL_OPENGL_ES2)
