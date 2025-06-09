@@ -10,10 +10,13 @@ emu8085Gui::emu8085Gui() {
 
   glfwSetErrorCallback(glfwErrorCallback);
 
+
+
   if (!glfwInit()) {
     std::cout << "Failed to initialize glfw" << '\n';
     exit(1);
   }
+
 
   // Decide GL+GLSL versions
 #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -51,6 +54,14 @@ emu8085Gui::emu8085Gui() {
     exit(1);
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1); // Enable vsync
+  
+  
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        std::cerr << "Failed to initialize GLAD" << std::endl;
+        glfwTerminate();
+        exit(1);
+    }
+
 
   // Setup Dear ImGui context
   IMGUI_CHECKVERSION();
