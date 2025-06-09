@@ -22,7 +22,7 @@ class cEmu8085Gui : public emu8085Gui {
   bool execute = false;
 
   char hexBuffer[3];
-  char whexBuffer[5];
+  char whexBuffer[5] = {0};
   byte *value;
   byte *flags;
 
@@ -31,38 +31,50 @@ public:
 
   friend void draw_reg(cEmu8085Gui &obj, std::string reg);
   friend void draw_reg_pair(cEmu8085Gui &obj, std::string reg);
-  friend void draw_flag(cEmu8085Gui &obj, bool flag);
+  friend void draw_flag(cEmu8085Gui &obj, std::string flagName, bool flag);
 };
 void draw_reg(cEmu8085Gui &obj, std::string reg) {
   obj.value = (byte *)obj.term.perform("printr " + reg);
   snprintf(obj.hexBuffer, sizeof(obj.hexBuffer), "%02X", *obj.value);
-  ImGui::Text("A :");
+  ImGui::Text((reg + " :").c_str());
   ImGui::SameLine();
-  if (ImGui::InputText("##A", obj.hexBuffer, sizeof(obj.hexBuffer),
-                       ImGuiInputTextFlags_CharsHexadecimal))
-    ;
-  {
-    obj.term.perform(std::string("loadr A ") + obj.hexBuffer);
+  if (ImGui::InputText(("##" + reg).c_str(), obj.hexBuffer,
+                       sizeof(obj.hexBuffer),
+                       ImGuiInputTextFlags_CharsHexadecimal)) {
+    obj.term.perform("loadr " + reg + " " + obj.hexBuffer);
   }
 }
 
 void draw_reg_pair(cEmu8085Gui &obj, std::string reg) {
-  obj.value = (byte *)(obj.term.perform("printr SP"));
+  obj.value = (byte *)(obj.term.perform(("printr " + reg).c_str()));
   snprintf(obj.whexBuffer, sizeof(obj.whexBuffer), "%04X",
            word(((*obj.value) << 8) + *(obj.value + sizeof(byte))));
-  ImGui::Text("SP :");
+  ImGui::Text((reg + " :").c_str());
   ImGui::SameLine();
-  ImGui::InputText("##SP", obj.whexBuffer, sizeof(obj.whexBuffer),
-                   ImGuiInputTextFlags_CharsHexadecimal);
+  if (ImGui::InputText(("##" + reg).c_str(), obj.whexBuffer,
+                       sizeof(obj.whexBuffer),
+                       ImGuiInputTextFlags_CharsHexadecimal)) {
+    std::string input = obj.whexBuffer;
+    while (input.size() < 4) {
+
+      input = "0" + input;
+    }
+
+    obj.term.perform("loadrp " + reg + " " + input[0] + input[1] + " " +
+                     input[2] + input[3]);
+  }
 }
 
-void draw_flag(cEmu8085Gui &obj, bool flag) {
+void draw_flag(cEmu8085Gui &obj, std::string flagName, bool flag) {
   snprintf(obj.hexBuffer, sizeof(obj.hexBuffer), "%01X", flag);
 
-  ImGui::Text("S :");
+  ImGui::Text((flagName + " :").c_str());
   ImGui::SameLine();
-  ImGui::InputText("##S", obj.hexBuffer, sizeof(obj.hexBuffer),
-                   ImGuiInputTextFlags_CharsHexadecimal);
+  if (ImGui::InputText(("##" + flagName).c_str(), obj.hexBuffer,
+                       sizeof(obj.hexBuffer),
+                       ImGuiInputTextFlags_CharsHexadecimal)) {
+    obj.term.perform("loadf " + flagName + " " + obj.hexBuffer);
+  }
 }
 int main() {
   cEmu8085Gui CPU;
@@ -107,7 +119,7 @@ void cEmu8085Gui::update() {
 
     ImGui::SameLine(0, 50);
 
-    draw_reg_pair(*this, "I");
+    draw_reg(*this, "I");
 
     ImGui::PushItemWidth(15);
     flags = (byte *)term.perform("printf");
@@ -118,23 +130,23 @@ void cEmu8085Gui::update() {
     bool CY = (*flags) >> 4;
     bool P = (*flags) >> 3;
 
-    draw_flag(*this, S);
+    draw_flag(*this, "S", S);
 
     ImGui::SameLine();
 
-    draw_flag(*this, Z);
+    draw_flag(*this, "Z", Z);
 
     ImGui::SameLine();
 
-    draw_flag(*this, AC);
+    draw_flag(*this, "AC", AC);
 
     ImGui::SameLine();
 
-    draw_flag(*this, CY);
+    draw_flag(*this, "CY", CY);
 
     ImGui::SameLine();
 
-    draw_flag(*this, P);
+    draw_flag(*this, "P", P);
   }
 
   ImGui::End();
