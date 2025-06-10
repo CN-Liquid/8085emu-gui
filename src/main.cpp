@@ -85,7 +85,15 @@ int main() {
 }
 
 void cEmu8085Gui::update() {
-  if (ImGui::Begin("Registers")) {
+  ImVec2 viewportSize = ImGui::GetMainViewport()->Size;
+
+  ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always, ImVec2(0, 0));
+
+  ImGui::SetNextWindowSize(ImVec2(viewportSize.x / 2, viewportSize.y / 2),
+                           ImGuiCond_Always);
+  if (ImGui::Begin("Registers", nullptr,
+                   ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
+                       ImGuiWindowFlags_NoMove)) {
 
     ImGui::PushItemWidth(25);
 
@@ -151,8 +159,14 @@ void cEmu8085Gui::update() {
 
   ImGui::End();
 
-  if (ImGui::Begin("Terminal")) {
+  ImGui::SetNextWindowSize(ImVec2(viewportSize.x, viewportSize.y / 2),
+                           ImGuiCond_Always);
+  ImGui::SetNextWindowPos(ImVec2(0, viewportSize.y / 2), ImGuiCond_Always,
+                          ImVec2(0, 0));
 
+  if (ImGui::Begin("Terminal", nullptr,
+                   ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
+                       ImGuiWindowFlags_NoMove)) {
     // Label must be unique per field
     ImGui::InputText("Command", inputBuffer, IM_ARRAYSIZE(inputBuffer));
 
@@ -164,9 +178,18 @@ void cEmu8085Gui::update() {
     }
   }
   ImGui::End();
+  ImGui::SetNextWindowPos(ImVec2(viewportSize.x, 0), ImGuiCond_Always,
+                          ImVec2(1, 0));
+  ImVec2 fixedSize = ImVec2(viewportSize.x / 2, viewportSize.y / 2);
+  ImGui::SetNextWindowSize(fixedSize, ImGuiCond_Always);
+  ImGui::Begin("Memory Viewer", nullptr,
+               ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
+                   ImGuiWindowFlags_NoMove);
+  ImGui::BeginChild("TableRegion", fixedSize, true,
+                    ImGuiWindowFlags_HorizontalScrollbar |
+                        ImGuiWindowFlags_AlwaysVerticalScrollbar);
   if (ImGui::BeginTable("LargeTable", 2,
                         ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
-
     ImGui::TableSetupColumn("Address");
     ImGui::TableSetupColumn("Value");
     ImGui::TableHeadersRow();
@@ -196,5 +219,7 @@ void cEmu8085Gui::update() {
     }
 
     ImGui::EndTable();
+    ImGui::EndChild();
+    ImGui::End();
   }
 }
